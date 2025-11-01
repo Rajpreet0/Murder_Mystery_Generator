@@ -1,10 +1,9 @@
-/*
-    Setting & Stimmung
-*/
 
 const StepTwo = () => {
   return (
-    <div>StepTwo</div>
+    <div>
+
+    </div>
   )
 }
 

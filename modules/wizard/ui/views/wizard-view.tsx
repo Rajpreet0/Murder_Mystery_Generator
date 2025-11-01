@@ -12,42 +12,48 @@ const WizardView = () => {
     const { step, nextStep, prevStep, reset } = useWizardStore();
 
   return (
-    <div className=" flex flex-col items-center justify-center relative p-2 w-full h-[90vh]">
-    {/* WIZARD CONTENT */}
-    <div className="flex flex-col items-center justify-center text-white">
-        {step === 1 && <StepOne/>}
-        {step === 2 && <StepTwo/>}
-        {step === 3 && <StepThree/>}
-        {step === 4 && <StepFour/>}
-    </div>
+    <div className="w-full text-white flex flex-col items-center">
+        <h2 className="text-2xl font-semibold mb-2 text-textMain">
+            {step === 1 && "Teilnehmer hinzufügen"}
+            {step === 2 && "Thema einstellen"}
+        </h2>
+        <div className=" flex flex-col items-center justify-center relative p-2 w-full h-[85vh]">
+        {/* WIZARD CONTENT */}
+        <div className="flex flex-col items-center justify-center text-white">
+            {step === 1 && <StepOne/>}
+            {step === 2 && <StepTwo/>}
+            {step === 3 && <StepThree/>}
+            {step === 4 && <StepFour/>}
+        </div>
 
-    {/* STEP BUTTON & RESET BUTTON */}
-    <div className="absolute bottom-6 left-0 w-full flex justify-center items-center">
-        {/* STEP BUTTON */}
-        <div className="flex gap-2">
-            <TooltipAbstract tooltipText="Back">
-                <Button 
-                    onClick={prevStep}
-                    disabled={step === 1}
-                    className="cursor-pointer bg-violett" ><ChevronLeft/></Button>
-            </TooltipAbstract>
-            <TooltipAbstract tooltipText="Next">
-                <Button
-                    onClick={nextStep}
-                    disabled={step === 4}
-                    className="cursor-pointer bg-violett"><ChevronRight /></Button>
+        {/* STEP BUTTON & RESET BUTTON */}
+        <div className="absolute bottom-6 left-0 w-full flex justify-center items-center">
+            {/* STEP BUTTON */}
+            <div className="flex gap-2">
+                <TooltipAbstract tooltipText="Back">
+                    <Button 
+                        onClick={prevStep}
+                        disabled={step === 1}
+                        className="cursor-pointer bg-violett" ><ChevronLeft/></Button>
+                </TooltipAbstract>
+                <TooltipAbstract tooltipText="Next">
+                    <Button
+                        onClick={nextStep}
+                        disabled={step === 4}
+                        className="cursor-pointer bg-violett"><ChevronRight /></Button>
+                </TooltipAbstract>
+            </div>
+            
+            {/* RESET BUTTON */}
+            <TooltipAbstract tooltipText="Reset">
+                <button className="absolute right-4 p-2 bg-lightBlack rounded-md cursor-pointer">
+                    <RotateCcw 
+                        onClick={reset}
+                        size={16} className="text-white"/>
+                </button>
             </TooltipAbstract>
         </div>
-        
-        {/* RESET BUTTON */}
-        <TooltipAbstract tooltipText="Reset">
-            <button className="absolute right-4 p-2 bg-lightBlack rounded-md cursor-pointer">
-                <RotateCcw 
-                    onClick={reset}
-                    size={16} className="text-white"/>
-            </button>
-        </TooltipAbstract>
-    </div>
+        </div>
     </div>
   )
 }

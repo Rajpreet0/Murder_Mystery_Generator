@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Playfair_Display } from "next/font/google";
+import { Rubik } from "next/font/google";
 import "./globals.css";
 
-const playfairDisplay = Playfair_Display({
+const rubik = Rubik({
   subsets: ["latin"],
 })
 
@@ -19,7 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${playfairDisplay.className} antialiased bg-black`}
+        className={`${rubik.className} antialiased bg-black`}
       >
         <main>
           {children}
