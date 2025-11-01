@@ -21,7 +21,9 @@ export default function RootLayout({
       <body
         className={`${playfairDisplay.className} antialiased bg-black`}
       >
-        {children}
+        <main>
+          {children}
+        </main>
       </body>
     </html>
   );
