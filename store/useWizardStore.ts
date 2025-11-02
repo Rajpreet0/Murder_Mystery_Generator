@@ -9,6 +9,7 @@ interface WizardState {
     step: number;
     players: Player[];
     setting: string;
+    genre: string;
     tone: string;
     courses: number;
     duration: number;
@@ -26,6 +27,7 @@ export const useWizardStore = create<WizardState>((set, get) => ({
     step: 1,
     players: [],
     setting: "",
+    genre: "",
     tone: "",
     courses: 3,
     duration: 3,
