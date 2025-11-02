@@ -16,6 +16,8 @@ const WizardView = () => {
         <h2 className="text-2xl font-semibold mb-2 text-textMain">
             {step === 1 && "🥸 Teilnehmer hinzufügen"}
             {step === 2 && "🎭 Setting & Stimmung wählen"}
+            {step === 3 && "🍽️ Menü & Dauer wählen"}
+            {step === 4 && "🚨 Schwierigkeitsgrad wählen"}
         </h2>
         <div className=" flex flex-col items-center justify-center relative p-2 w-full h-[85vh]">
         {/* WIZARD CONTENT */}
