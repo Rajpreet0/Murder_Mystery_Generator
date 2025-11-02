@@ -1,4 +1,4 @@
-import Header from "@/components/Header";
+//import Header from "@/components/Header";
 
 interface Props {
     children: React.ReactNode;
@@ -6,8 +6,8 @@ interface Props {
 
 const Layout = ({children}: Props) => {
     return(
-        <div className="h-screen">
-            <Header/>
+        <div className="min-h-screen">
+            {/*<Header/>*/}
             <main>
                 {children}
             </main>
