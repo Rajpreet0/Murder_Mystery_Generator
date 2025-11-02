@@ -14,7 +14,7 @@ const TooltipAbstract: React.FC<TooltipAbstractProps> = ({
         <TooltipTrigger asChild>
             {children}
         </TooltipTrigger>
-        <TooltipContent className="tracking-wider text-md">
+        <TooltipContent className="tracking-wider text-md bg-lightBlack">
             {tooltipText}
         </TooltipContent>
     </Tooltip>
