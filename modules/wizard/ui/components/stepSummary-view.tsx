@@ -2,9 +2,11 @@
 import { Button } from "@/components/ui/button";
 import { useWizardStore } from "@/store/useWizardStore"
 import { Drama, HandPlatter, Sparkles, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const SummaryView = () => {
     const { players, setting, genre, tone, courses, duration, difficulty } = useWizardStore();
+    const router = useRouter();
 
   return (
     <div className="flex flex-col items-center gap-8 w-full max-w-3xl px-4 sm:px-0 text-[#EAEAEA]">
@@ -84,6 +86,7 @@ const SummaryView = () => {
 
         {/* Action Buttons */}
         <Button
+            onClick={() => router.push("/generated")}
             className="bg-[#8E7CC3] hover:bg-[#A89FD4] text-white rounded-lg px-6 py-3 text-base cursor-pointer flex items-center gap-2"
             >
                 <Sparkles className="h-4 w-4" /> Generiere
