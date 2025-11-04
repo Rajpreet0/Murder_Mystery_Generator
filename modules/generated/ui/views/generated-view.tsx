@@ -1,9 +1,10 @@
 "use client";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import ShareButton from "@/components/ShareButton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWizardStore } from "@/store/useWizardStore";
 import { FileDown, Loader2, Mail } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react"
 
 interface MysteryData {
@@ -31,12 +32,49 @@ interface MysteryData {
 }
 
 const GeneratedView = () => {
+    const { aiResponse, updateField } = useWizardStore();
     const [data, setData] = useState<MysteryData | null>(null);
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
+    const [hydrated, setHydrated] = useState(false);
+
+    const searchParams = useSearchParams();
 
     useEffect(() => {
+      setHydrated(true);
+    }, []);
+
+    useEffect(() => {
+        if (!hydrated) return;
+
+
+        const dataParam = searchParams.get("data");
+        if (dataParam) {
+          try {
+            const decoded = JSON.parse(decodeURIComponent(dataParam));
+            Object.entries(decoded).forEach(([key, value]) =>
+              updateField(key as any, value)
+            );
+
+            if (decoded.aiResponse) {
+              setData(decoded.aiResponse);
+              setLoading(false);
+              console.log("Daten aus Shared Link geladen!");
+              return;
+            }
+          } catch (err) {
+            console.error("Fehler beim Dekodieren des Shared-Links:", err);
+          }
+        }
+
         const handleGeneration = async () => {
+            if (aiResponse) {
+              setData(aiResponse);
+              setLoading(false);
+              console.log("AI Response aus Zustand geladen");
+              return;
+            }
+
             try {
                 const res = await fetch("/api/generateMystery", {
                     method: "POST",
@@ -45,6 +83,7 @@ const GeneratedView = () => {
                 });
                 const result = await res.json();
                 setData(result.data);
+                updateField("aiResponse", result.data);
             } catch (err) {
                 console.log("[ERROR_GENERATE_REQUEST]: ", err);
             } finally {
@@ -53,7 +92,7 @@ const GeneratedView = () => {
         }
 
         handleGeneration();
-    }, []);
+    }, [hydrated, aiResponse, updateField]);
 
   const sendEmails = async () => {
     if (!data) return;
@@ -182,23 +221,24 @@ const GeneratedView = () => {
       </div>
 
       <div className="flex gap-4">
-                  {/* DOWNLOAD BUTTON */}
-      <Button
-        onClick={generatePDF}
-        className="bg-[#8E7CC3] hover:bg-[#A89FD4] text-white mt-6 px-6 py-2 flex items-center gap-2 cursor-pointer"
-      >
-        <FileDown size={18} />
-        Download als PDF
-      </Button>
+        {/* DOWNLOAD BUTTON */}
+        <Button
+          onClick={generatePDF}
+          className="bg-[#8E7CC3] hover:bg-[#A89FD4] text-white mt-6 px-6 py-2 flex items-center gap-2 cursor-pointer"
+        >
+          <FileDown size={18} />
+          Download als PDF
+        </Button>
         {/* MAIL BUTTON */}
-     <Button
-        onClick={sendEmails}
-        disabled={sending}
-        className="bg-[#8E7CC3] hover:bg-[#A89FD4] text-white mt-6 px-6 py-2 flex items-center gap-2 cursor-pointer"
-      >
-        {sending ? <Loader2 className="animate-spin w-4 h-4" /> : <Mail size={18} />}
-        E-Mails an Spieler senden
-      </Button>
+        <Button
+          onClick={sendEmails}
+          disabled={sending}
+          className="bg-[#8E7CC3] hover:bg-[#A89FD4] text-white mt-6 px-6 py-2 flex items-center gap-2 cursor-pointer"
+        >
+          {sending ? <Loader2 className="animate-spin w-4 h-4" /> : <Mail size={18} />}
+          E-Mails an Spieler senden
+        </Button>
+        <ShareButton/>
       </div>
     </div>
   )

@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface Player {
     name: string;
@@ -14,6 +15,7 @@ interface WizardState {
     courses: number;
     duration: number;
     difficulty: number;
+    aiResponse?: any;
     setStep: (step: number) => void;
     nextStep: () => void;
     prevStep: () => void;
@@ -23,38 +25,64 @@ interface WizardState {
     reset: () => void;
 }
 
-export const useWizardStore = create<WizardState>((set, get) => ({
-    step: 1,
-    players: [],
-    setting: "",
-    genre: "",
-    tone: "",
-    courses: 3,
-    duration: 3,
-    difficulty: 3,
-    setStep: (step) => set({ step }),
-    nextStep: () => {
+export const useWizardStore = create<WizardState>()(
+  persist(
+    (set, get) => ({
+      step: 1,
+      players: [],
+      setting: "",
+      genre: "",
+      tone: "",
+      courses: 3,
+      duration: 3,
+      difficulty: 3,
+      aiResponse: null,
+
+      // 🧭 STEP CONTROLS
+      setStep: (step) => set({ step }),
+      nextStep: () => {
         const current = get().step;
         if (current < 5) set({ step: current + 1 });
-    },
-    prevStep: () => {
+      },
+      prevStep: () => {
         const current = get().step;
         if (current > 1) set({ step: current - 1 });
-    },
-    addPlayer: (player) => set((state) => ({ players: [...state.players, player] })),
-    removePlayer: (index) =>
+      },
+      addPlayer: (player) =>
+        set((state) => ({ players: [...state.players, player] })),
+      removePlayer: (index) =>
         set((state) => ({
-            players: state.players.filter((_, i) => i !== index),
+          players: state.players.filter((_, i) => i !== index),
         })),
-    updateField: (key, value) => set({ [key]: value } as Partial<WizardState>),
-    reset: () => 
+      updateField: (key, value) => set({ [key]: value } as Partial<WizardState>),
+      reset: () => {
         set({
-            step: 1,
-            players: [],
-            setting: "",
-            tone: "",
-            courses: 3,
-            duration: 3,
-            difficulty: 3
-        }),
-}));
+          step: 1,
+          players: [],
+          setting: "",
+          genre: "",
+          tone: "",
+          courses: 3,
+          duration: 3,
+          difficulty: 3,
+          aiResponse: null,
+        });
+        localStorage.removeItem("wizard-storage");
+      },
+    }),
+    {
+      name: "wizard-storage",
+      partialize: (state) => ({
+        step: state.step,
+        players: state.players,
+        setting: state.setting,
+        genre: state.genre,
+        tone: state.tone,
+        courses: state.courses,
+        duration: state.duration,
+        difficulty: state.difficulty,
+        aiResponse: state.aiResponse,
+      }),
+    }
+  )
+);

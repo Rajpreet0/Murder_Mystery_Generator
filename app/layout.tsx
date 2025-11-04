@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Rubik } from "next/font/google";
 import "./globals.css";
+import { Toaster } from "@/components/ui/sonner";
 
 const rubik = Rubik({
   subsets: ["latin"],
@@ -24,6 +25,7 @@ export default function RootLayout({
         <main>
           {children}
         </main>
+        <Toaster/>
       </body>
     </html>
   );
