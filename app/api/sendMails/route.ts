@@ -3,7 +3,8 @@ import nodemailer from "nodemailer";
 
 export async function POST(req: Request) {
     try {
-        const { roles, hints, title } = await req.json();
+        const testMode = false;
+        const { roles, hints, title, players } = await req.json();
 
         if (!roles || !Array.isArray(roles)) {
             return NextResponse.json(
@@ -11,40 +12,63 @@ export async function POST(req: Request) {
             )
         }
 
-        // TODO: Muss noch angepasst werden
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST,
             port: Number(process.env.SMTP_PORT),
-            secure: false,
+            secure: Number(process.env.SMTP_PORT) === 465 ,
             auth: {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASS,
             },
         });
 
-        for (const role of roles) {
+        for (const [index, role] of roles.entries()) {
+            if (testMode && index > 0) break;
+
+            const playerInfo = players.find(
+                (p: any) => p.name.trim().toLowerCase() === role.player.trim().toLowerCase()
+            );
+
+            if (!playerInfo || !playerInfo.email) {
+                continue;
+            }
+
             const playerHint = hints.find((h: any) => h.to === role.character);
 
-            const mailText = `
-            🕵️ Willkommen zum Murder Mystery Dinner: ${title}
+            const mailHtml=`
+                <div style="font-family:Georgia,serif;background:#0e0e10;color:#eaeaea;padding:24px;">
+                    <h2 style="color:#d4af37;">🎭 Deine Rolle im Murder Mystery Dinner</h2>
+                    <p><strong>${role.character}</strong></p>
+                    <p>${role.description}</p>
 
-            🎭 Deine Rolle: ${role.character}
-            Beschreibung: ${role.description}
+                    <h3 style="color:#8e7cc3;">🎯 Dein Ziel</h3>
+                    <p>${role.goal}</p>
 
-            🎯 Dein Ziel:
-            ${role.goal}
+                    ${
+                        playerHint
+                        ? `<p style="margin-top:16px;color:#aaa;">💌 Dein geheimer Hinweis befindet sich im Anhang dieser E-Mail.</p>`
+                        : `<p style="margin-top:16px;color:#aaa;">Kein geheimer Hinweis erforderlich.</p>`
+                    }
 
-            💌 Dein geheimer Hinweis:
-            ${playerHint ? playerHint.text : "Kein Hinweis vorhanden"}
+                    <hr style="border:none;border-top:1px solid #444;margin:20px 0;">
+                    <p style="font-size:14px;color:#888;">Halte diese Informationen geheim und sei bereit für das Dinner.</p>
+                </div>
+            `;
 
-            Halte diese Informationen geheim und sei bereit für das Dinner.
-            `
+            const attachments = playerHint ? [
+                {
+                    filename: `Geheimer_Hinweis_${role.character}.txt`,
+                    content: playerHint.text,
+                }
+            ] : [];
+
 
             await transporter.sendMail({
-                from: `"Murder Mystery Dinner" <mystery@dinner-game.com>`,
-                to: role.player.includes("@") ? role.player : "test@example.com", // failsafe
+                from: process.env.SMTP_USER,
+                to: playerInfo.email,
                 subject: `Deine Rolle im Murder Mystery Dinner "${title}"`,
-                text: mailText,
+                html: mailHtml,
+                attachments,
             });
         }
 

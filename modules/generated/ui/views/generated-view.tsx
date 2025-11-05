@@ -6,6 +6,7 @@ import { useWizardStore } from "@/store/useWizardStore";
 import { FileDown, Loader2, Mail } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react"
+import { toast } from "sonner";
 
 interface MysteryData {
     title: string;
@@ -33,7 +34,14 @@ interface MysteryData {
 
 const GeneratedView = () => {
     const { aiResponse, updateField } = useWizardStore();
-    const [data, setData] = useState<MysteryData | null>(null);
+    const [data, setData] = useState<MysteryData>({
+      title: "",
+      summary: "",
+      roles: [],
+      hints: [],
+      menu: [],
+      phases: [],
+    });
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
     const [hydrated, setHydrated] = useState(false);
@@ -99,23 +107,26 @@ const GeneratedView = () => {
     setSending(true);
 
     try {
-      const res = await fetch("/api/sendEmails", {
+      const res = await fetch("/api/sendMails", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: data.title,
           roles: data.roles,
           hints: data.hints,
+          players: useWizardStore.getState().players
         }),
       });
 
+      console.log(res);
+
       if (res.ok) {
-        //toast.success("E-Mails erfolgreich versendet!");
+        toast.success("E-Mails erfolgreich versendet!");
       } else {
-        //.error("Fehler beim E-Mail-Versand");
+        toast.error("Fehler beim E-Mail-Versand");
       }
     } catch (err) {
-      //toast.error("Verbindungsfehler beim Senden");
+      toast.error("Verbindungsfehler beim Senden");
     } finally {
       setSending(false);
     }
@@ -170,7 +181,7 @@ const GeneratedView = () => {
       <div className="w-full max-w-3xl mb-10">
         <h2 className="text-2xl font-semibold text-[#8E7CC3] mb-4">🎭 Rollenübersicht</h2>
         <div className="grid sm:grid-cols-2 gap-4">
-          {data.roles.map((role, i) => (
+          {data?.roles?.map((role, i) => (
             <Card key={i} className="bg-[#141416] border border-[#2C2C2C]">
               <CardHeader>
                 <CardTitle className="text-[#D4AF37] text-lg">{role.character}</CardTitle>
@@ -193,7 +204,7 @@ const GeneratedView = () => {
       <div className="w-full max-w-3xl mb-10">
         <h2 className="text-2xl font-semibold text-[#8E7CC3] mb-4">🍽️ Menü</h2>
         <div className="grid sm:grid-cols-3 gap-4">
-          {data.menu.map((item, i) => (
+          {data?.menu?.map((item, i) => (
             <Card key={i} className="bg-[#141416] border-[#2C2C2C]">
               <CardHeader>
                 <CardTitle className="text-[#D4AF37]">{item.course}</CardTitle>
@@ -208,7 +219,7 @@ const GeneratedView = () => {
       <div className="w-full max-w-3xl mb-10">
         <h2 className="text-2xl font-semibold text-[#8E7CC3] mb-4">📜 Ablauf</h2>
         <div className="flex flex-col gap-3">
-          {data.phases.map((phase, i) => (
+          {data?.phases?.map((phase, i) => (
             <div
               key={i}
               className="border border-[#2C2C2C] rounded-lg bg-[#141416] p-4"
@@ -219,8 +230,9 @@ const GeneratedView = () => {
           ))}
         </div>
       </div>
-
-      <div className="flex gap-4">
+      
+      {/* BUTTONS */}
+      <div className="flex flex-col gap-2 md:flex-row md:gap-4">
         {/* DOWNLOAD BUTTON */}
         <Button
           onClick={generatePDF}
