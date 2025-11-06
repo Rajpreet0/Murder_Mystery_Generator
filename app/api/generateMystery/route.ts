@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { OpenAI} from "openai"
 
-
 interface Player {
     name: string;
     email: string;

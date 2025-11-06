@@ -2,13 +2,14 @@ import { useWizardStore } from "@/store/useWizardStore"
 import { Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "./ui/button";
+import crypto from "crypto";
 
 const ShareButton = () => {
 
     const state = useWizardStore((s) => s);
 
     const handleShare = () => {
-        const encoded = encodeURIComponent(JSON.stringify({
+        const payload = {
             players: state.players,
             setting: state.setting,
             genre: state.genre,
@@ -17,10 +18,21 @@ const ShareButton = () => {
             duration: state.duration,
             difficulty: state.difficulty,
             aiResponse: state.aiResponse,
-        }));
+            readonly: true,
+        }
 
-        const shareUrl = `${window.location.origin}/generated?data=${encoded}`;
+        const json = JSON.stringify(payload);
+        const encoded = encodeURIComponent(json);
+
+        const secret = process.env.NEXT_PUBLIC_SHARE_SECRET!;
+        const hash = crypto
+          .createHash("sha256")
+          .update(json + secret)
+          .digest("hex");
+
+        const shareUrl = `${window.location.origin}/generated?data=${encoded}&sig=${hash}`;
         navigator.clipboard.writeText(shareUrl);
+        
         toast.success("🔗 Link wurde in die Zwischenablage kopiert!");
     }
 
