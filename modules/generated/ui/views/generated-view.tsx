@@ -1,12 +1,14 @@
 "use client";
 import ShareButton from "@/components/ShareButton";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWizardStore } from "@/store/useWizardStore";
-import { FileDown, Loader2, Mail } from "lucide-react";
+import { FileDown, Loader2, Mail, RotateCcw } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react"
 import { toast } from "sonner";
+import CryptoJS from "crypto-js";
 
 interface MysteryData {
     title: string;
@@ -33,7 +35,7 @@ interface MysteryData {
 }
 
 const GeneratedView = () => {
-    const { aiResponse, updateField } = useWizardStore();
+    const { aiResponse, updateField, regenCount, incrementRegenCount } = useWizardStore();
     const [data, setData] = useState<MysteryData>({
       title: "",
       summary: "",
@@ -45,63 +47,75 @@ const GeneratedView = () => {
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
     const [hydrated, setHydrated] = useState(false);
-
+    const [readonly, setReadOnly] = useState(false); 
     const searchParams = useSearchParams();
 
     useEffect(() => {
-      setHydrated(true);
-    }, []);
-
-    useEffect(() => {
-        if (!hydrated) return;
-
+      const loadData = async () => {
+        setHydrated(true);
 
         const dataParam = searchParams.get("data");
-        if (dataParam) {
+        const sigParam = searchParams.get("sig");
+
+        if (dataParam && sigParam) {
           try {
-            const decoded = JSON.parse(decodeURIComponent(dataParam));
-            Object.entries(decoded).forEach(([key, value]) =>
+            const decoded = decodeURIComponent(dataParam);
+            const secret = process.env.NEXT_PUBLIC_SHARE_SECRET || "";
+            const expectedSig = CryptoJS.SHA256(decoded + secret).toString();
+
+            if (expectedSig !== sigParam) {
+              console.warn("Ungültige Signatur oder manipulierte URL!");
+              setReadOnly(true);
+              toast.error("⚠️ Dieser Link wurde manipuliert oder ist ungültig!");
+              setLoading(false);
+              return;
+            }
+
+            setReadOnly(true);
+            const parsed = JSON.parse(decoded);
+            Object.entries(parsed).forEach(([key, value]) =>
               updateField(key as any, value)
             );
-
-            if (decoded.aiResponse) {
-              setData(decoded.aiResponse);
-              setLoading(false);
-              console.log("Daten aus Shared Link geladen!");
-              return;
+            if (parsed.aiResponse) {
+              setData(parsed.aiResponse);
             }
           } catch (err) {
-            console.error("Fehler beim Dekodieren des Shared-Links:", err);
+            console.error("Fehler beim Prüfen oder Laden:", err);
+            toast.error("Ungültiger Link!");
+          } finally {
+            setLoading(false);
           }
+          return;
         }
 
-        const handleGeneration = async () => {
-            if (aiResponse) {
-              setData(aiResponse);
-              setLoading(false);
-              console.log("AI Response aus Zustand geladen");
-              return;
-            }
+        setReadOnly(false);
 
-            try {
-                const res = await fetch("/api/generateMystery", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(useWizardStore.getState()),
-                });
-                const result = await res.json();
-                setData(result.data);
-                updateField("aiResponse", result.data);
-            } catch (err) {
-                console.log("[ERROR_GENERATE_REQUEST]: ", err);
-            } finally {
-                setLoading(false);
-            }
+        if (aiResponse) {
+          setData(aiResponse);
+          setLoading(false);
+          return;
         }
 
-        handleGeneration();
-    }, [hydrated, aiResponse, updateField]);
+        try {
+          const res = await fetch("/api/generateMystery", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(useWizardStore.getState()),
+          });
+          const result = await res.json();
+          setData(result.data);
+          updateField("aiResponse", result.data);
+        } catch (err) {
+          console.error("[ERROR_GENERATE_REQUEST]:", err);
+        } finally {
+          setLoading(false);
+        }
+      };
 
+      loadData();
+    }, [searchParams, aiResponse, updateField]);
+
+  // SEND MAILS TO PLAYER FUNCTION
   const sendEmails = async () => {
     if (!data) return;
     setSending(true);
@@ -132,6 +146,7 @@ const GeneratedView = () => {
     }
   };
 
+  // GENERATE PDF FUNCTION
   const generatePDF = async () => {
     try {
       const res = await fetch("/api/generatePdf", {
@@ -148,6 +163,47 @@ const GeneratedView = () => {
       a.click();
     } catch (err) {
       console.log("[PDF_GENERATE_ERR]: ", err);
+    }
+  }
+
+  // REGENERATE DINNER
+  const regnerateDinner = async () => {
+    if (readonly) {
+      toast.error("🔒 Dieses Dinner wurde geteilt – Neu-Generieren ist deaktiviert.");
+      return;
+    }
+    
+    if (regenCount >= 3) {
+      toast.error("Du kannst das Dinner nur dreimal neu generieren 🕯️");
+      return;
+    }
+
+    setLoading(true);
+    toast.message("Das Dinner wird neu generiert... 🕵️");
+
+    try {
+
+      const res = await fetch("/api/generateMystery", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(useWizardStore.getState()),
+      });
+
+      const result = await res.json();
+      if (result.data) {
+        setData(result.data);
+        updateField("aiResponse", result.data);
+        incrementRegenCount();
+        toast.success("Dinner erfolgreich neu generiert!");
+      } else {
+        toast.error("Fehler beim Neu-Generieren!");
+      }
+
+    } catch (err) {
+      console.error("[REGENERATE_ERROR]:", err);
+      toast.error("Fehler bei der Neu-Generierung");
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -250,8 +306,38 @@ const GeneratedView = () => {
           {sending ? <Loader2 className="animate-spin w-4 h-4" /> : <Mail size={18} />}
           E-Mails an Spieler senden
         </Button>
+        {/* SHARE BUTTON */}
         <ShareButton/>
+
+        {/* REGENERATE BUTTON */}
+        <div className="relative inline-flex items-center justify-center w-full sm:w-auto">
+          <Button
+            onClick={regnerateDinner}
+            disabled={readonly || loading || regenCount >= 3}
+            className="relative bg-[#8E7CC3] hover:bg-[#A89FD4] text-white mt-6 px-6 py-2 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 w-full sm:w-auto"
+          >
+            {loading ? (
+              <Loader2 className="animate-spin w-4 h-4" />
+            ) : (
+              <RotateCcw />
+            )}
+            Dinner neu generieren
+            {!readonly && (
+              <Badge
+                className="absolute -top-2 -right-2 sm:-right-3 sm:-top-2 bg-[#D4AF37] text-black text-xs px-2 py-0.5 shadow-md"
+                variant="secondary"
+              >
+                {Math.max(0, 3 - regenCount)}
+              </Badge>
+            )}
+          </Button>
+        </div>
       </div>
+      {readonly && (
+        <p className="text-xs text-[#9C9CA5] mt-4 italic">
+          🔒 Neu-Generieren ist im geteilten Modus deaktiviert
+        </p>
+      )}
     </div>
   )
 }

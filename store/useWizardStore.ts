@@ -16,6 +16,9 @@ interface WizardState {
     duration: number;
     difficulty: number;
     aiResponse?: any;
+    regenCount: number;
+    incrementRegenCount: () => void;
+    resetRegenCount: () => void;
     setStep: (step: number) => void;
     nextStep: () => void;
     prevStep: () => void;
@@ -37,6 +40,7 @@ export const useWizardStore = create<WizardState>()(
       duration: 3,
       difficulty: 3,
       aiResponse: null,
+      regenCount: 0,
 
       // 🧭 STEP CONTROLS
       setStep: (step) => set({ step }),
@@ -48,12 +52,15 @@ export const useWizardStore = create<WizardState>()(
         const current = get().step;
         if (current > 1) set({ step: current - 1 });
       },
-      addPlayer: (player) =>
-        set((state) => ({ players: [...state.players, player] })),
-      removePlayer: (index) =>
-        set((state) => ({
+      addPlayer: (player) => set((state) => ({ players: [...state.players, player] })),
+      removePlayer: (index) => set((state) => ({
           players: state.players.filter((_, i) => i !== index),
-        })),
+      })),
+      incrementRegenCount: () => {
+        const current = get().regenCount;
+        if (current < 3) set({ regenCount: current + 1 });
+      },
+      resetRegenCount: () => set({ regenCount: 0}),
       updateField: (key, value) => set({ [key]: value } as Partial<WizardState>),
       reset: () => {
         set({
@@ -66,6 +73,7 @@ export const useWizardStore = create<WizardState>()(
           duration: 3,
           difficulty: 3,
           aiResponse: null,
+          regenCount: 0,
         });
         localStorage.removeItem("wizard-storage");
       },
@@ -82,6 +90,7 @@ export const useWizardStore = create<WizardState>()(
         duration: state.duration,
         difficulty: state.difficulty,
         aiResponse: state.aiResponse,
+        regenCount: state.regenCount,
       }),
     }
   )
