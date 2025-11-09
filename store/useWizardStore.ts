@@ -78,6 +78,7 @@ export const useWizardStore = create<WizardState>()(
           regenCount: 0,
         });
         localStorage.removeItem("wizard-storage");
+        localStorage.removeItem("mmd-premium-token");
       },
     }),
     {

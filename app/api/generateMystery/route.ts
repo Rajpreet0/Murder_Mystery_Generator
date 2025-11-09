@@ -1,3 +1,4 @@
+import { isPremium } from "@/lib/isPremium";
 import { NextResponse } from "next/server";
 import { OpenAI} from "openai"
 
@@ -32,9 +33,11 @@ export async function POST(req: Request) {
             )
         }
 
+        const model = isPremium() ? "gpt-5" : "gpt-4o-mini";
+
         // Function calling 
         const completion = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
+            model:  model,
             messages: [
                 {
                     role: 'system',
