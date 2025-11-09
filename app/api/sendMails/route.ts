@@ -1,10 +1,32 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 
+interface Role {
+    character: string;
+    player: string;
+    description: string;
+    goal: string;
+}
+
+interface Hint {
+    to: string;
+    text: string;
+}
+
+interface Player {
+    name: string;
+    email: string;
+}
+
 export async function POST(req: Request) {
     try {
         const testMode = false;
-        const { roles, hints, title, players } = await req.json();
+        const { roles, hints, title, players } = (await req.json()) as {
+            roles: Role[],
+            hints: Hint[],
+            title: string;
+            players: Player[];
+        };
 
         if (!roles || !Array.isArray(roles)) {
             return NextResponse.json(
@@ -26,14 +48,14 @@ export async function POST(req: Request) {
             if (testMode && index > 0) break;
 
             const playerInfo = players.find(
-                (p: any) => p.name.trim().toLowerCase() === role.player.trim().toLowerCase()
+                (p) => p.name.trim().toLowerCase() === role.player.trim().toLowerCase()
             );
 
             if (!playerInfo || !playerInfo.email) {
                 continue;
             }
 
-            const playerHint = hints.find((h: any) => h.to === role.character);
+            const playerHint = hints.find((h) => h.to === role.character);
 
             const mailHtml=`
                 <div style="font-family:Georgia,serif;background:#0e0e10;color:#eaeaea;padding:24px;">

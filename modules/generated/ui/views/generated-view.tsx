@@ -74,6 +74,7 @@ const GeneratedView = () => {
             setReadOnly(true);
             const parsed = JSON.parse(decoded);
             Object.entries(parsed).forEach(([key, value]) =>
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
               updateField(key as any, value)
             );
             if (parsed.aiResponse) {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { PDFDocument, PDFPage, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, PDFFont, PDFPage, RGB, rgb, StandardFonts } from "pdf-lib";
 
 // Helper Function for more lines
 function wrapText(text: string, maxLength: number): string[] {
@@ -23,12 +23,12 @@ function writeText(
     page: PDFPage,
     pdfDoc: PDFDocument,
     textLines: string[],
-    font: any,
-    color: any,
+    font: PDFFont,
+    color: RGB,
     fontSize: number,
     x: number,
     y: number,
-    bgDark: any,
+    bgDark: RGB,
     width: number,
     height: number,
 ): {page: PDFPage; y: number} {

@@ -94,9 +94,9 @@ const StepThree = () => {
           </p>
           <p className="text-sm text-[#9C9CA5] max-w-full sm:max-w-[480px] leading-snug mt-1">
             Das Menüthema verleiht dem Abend seine persönliche Note.  
-            Beispiele: <span className="text-[#D4AF37]">"Italienischer Abend"</span>,  
-            <span className="text-[#D4AF37]">"Mord im Schloss Bellevue"</span> oder  
-            <span className="text-[#D4AF37]">"Dinner im All"</span>.
+            Beispiele: <span className="text-[#D4AF37]">&quot;Italienischer Abend&quot;</span>,  
+            <span className="text-[#D4AF37]">&quot;Mord im Schloss Bellevue&quot;</span> oder  
+            <span className="text-[#D4AF37]">&quot;Dinner im All&quot;</span>.
           </p>
         </div>
 

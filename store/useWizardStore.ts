@@ -15,6 +15,7 @@ interface WizardState {
     courses: number;
     duration: number;
     difficulty: number;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     aiResponse?: any;
     regenCount: number;
     incrementRegenCount: () => void;
@@ -24,6 +25,7 @@ interface WizardState {
     prevStep: () => void;
     addPlayer: (player: Player) => void;
     removePlayer: (index: number) => void;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     updateField: (key: keyof Omit<WizardState, 'step' | 'setStep' | 'nextStep' | 'prevStep' | 'addPlayer' | 'removePlayer' | 'updateField' | 'reset'>, value: any) => void;
     reset: () => void;
 }
