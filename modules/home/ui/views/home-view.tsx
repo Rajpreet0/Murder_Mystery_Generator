@@ -9,6 +9,7 @@ import { Crown, Sparkles } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { DM_Serif_Text } from "next/font/google";
 import FeatureComponent from "../components/featureComponent";
+import { toast } from "sonner";
 
 const dm = DM_Serif_Text({
     subsets: ["latin"],
@@ -21,6 +22,20 @@ const HomeView = () => {
     const { scrollYProgress } = useScroll();
     const opacity = useTransform(scrollYProgress, [0, 0.2], [0,1]);
     const y = useTransform(scrollYProgress, [0, 0.2], [100, 0]);
+
+    const handlePremium = async () => {
+      try {
+        const res = await fetch("/api/createCheckoutSession", {
+          method: "POST",
+        });
+
+        const data = await res.json();
+        if (data.url) window.location.href = data.url;
+      } catch (err) {
+        console.log("[STRIPE_ERROR]: ", err);
+        toast.error("Da hat etwas nicht geklappt.");
+      }
+    }
 
   return (
        <main className="min-h-screen w-full bg-[#0E0E10] text-white flex flex-col items-center justify-start relative overflow-hidden">
@@ -143,7 +158,7 @@ const HomeView = () => {
                 </div>
 
                 <Button
-                  onClick={() => router.push("/wizard")}
+                  onClick={handlePremium}
                   className="bg-[#8E7CC3] hover:bg-[#A89FD4] text-white font-semibold w-full py-5"
                 >
                   Upgrade starten

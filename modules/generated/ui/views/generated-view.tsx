@@ -4,11 +4,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWizardStore } from "@/store/useWizardStore";
-import { FileDown, Loader2, Mail, RotateCcw } from "lucide-react";
+import { FileDown, Loader2, Lock, Mail, RotateCcw } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react"
 import { toast } from "sonner";
 import CryptoJS from "crypto-js";
+import { isPremium } from "@/lib/isPremium";
 
 interface MysteryData {
     title: string;
@@ -49,6 +50,7 @@ const GeneratedView = () => {
     const [hydrated, setHydrated] = useState(false);
     const [readonly, setReadOnly] = useState(false); 
     const searchParams = useSearchParams();
+    const premium = isPremium();
 
     useEffect(() => {
       const loadData = async () => {
@@ -149,6 +151,11 @@ const GeneratedView = () => {
 
   // GENERATE PDF FUNCTION
   const generatePDF = async () => {
+    if (!premium) {
+      toast.error("🔒 Diese Funktion ist nur für Premium-Nutzer verfügbar!");
+      return;
+    }
+    
     try {
       const res = await fetch("/api/generatePdf", {
         method: "POST",
@@ -171,6 +178,11 @@ const GeneratedView = () => {
   const regnerateDinner = async () => {
     if (readonly) {
       toast.error("🔒 Dieses Dinner wurde geteilt – Neu-Generieren ist deaktiviert.");
+      return;
+    }
+
+    if (!premium) {
+      toast.error("🔒 Diese Funktion ist nur für Premium-Nutzer verfügbar!");
       return;
     }
     
@@ -293,7 +305,11 @@ const GeneratedView = () => {
         {/* DOWNLOAD BUTTON */}
         <Button
           onClick={generatePDF}
-          className="bg-[#8E7CC3] hover:bg-[#A89FD4] text-white mt-6 px-6 py-2 flex items-center gap-2 cursor-pointer"
+          className={`mt-6 px-6 py-2 flex items-center gap-2 cursor-pointer transition ${
+              premium
+                ? "bg-[#8E7CC3] hover:bg-[#A89FD4] text-white"
+                : "bg-[#2C2C2C] text-[#888] cursor-not-allowed"
+          }`}
         >
           <FileDown size={18} />
           Download als PDF
@@ -315,7 +331,9 @@ const GeneratedView = () => {
           <Button
             onClick={regnerateDinner}
             disabled={readonly || loading || regenCount >= 3}
-            className="relative bg-[#8E7CC3] hover:bg-[#A89FD4] text-white mt-6 px-6 py-2 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 w-full sm:w-auto"
+            className={`relative mt-6 px-6 py-2 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 w-full sm:w-auto ${premium 
+              ? "bg-[#8E7CC3] hover:bg-[#A89FD4] text-white"
+              : "bg-[#2C2C2C] text-[#888] cursor-not-allowed"}`}
           >
             {loading ? (
               <Loader2 className="animate-spin w-4 h-4" />
@@ -325,7 +343,8 @@ const GeneratedView = () => {
             Dinner neu generieren
             {!readonly && (
               <Badge
-                className="absolute -top-2 -right-2 sm:-right-3 sm:-top-2 bg-[#D4AF37] text-black text-xs px-2 py-0.5 shadow-md"
+                className={`absolute -top-2 -right-2 sm:-right-3 sm:-top-2   text-xs px-2 py-0.5 shadow-md
+                ${premium ? "bg-[#D4AF37] text-black" : "bg-[#2C2C2C] text-[#888]"}`}
                 variant="secondary"
               >
                 {Math.max(0, 3 - regenCount)}
