@@ -1,5 +1,5 @@
 "use client";
-import TooltipAbstract from "@/components/TooltipAbstract";
+import TooltipAbstract from "@/components/layout/TooltipAbstract";
 import { Button } from "@/components/ui/button"
 import { useWizardStore } from "@/store/useWizardStore";
 import { ChevronLeft, ChevronRight, RotateCcw } from "lucide-react";

@@ -1,7 +1,7 @@
 import { useWizardStore } from "@/store/useWizardStore"
 import { Share2 } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import crypto from "crypto";
 import { isPremium } from "@/lib/isPremium";
 
