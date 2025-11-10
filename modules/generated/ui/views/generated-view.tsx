@@ -1,5 +1,5 @@
 "use client";
-import ShareButton from "@/components/ShareButton";
+import ShareButton from "@/components/layout/ShareButton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

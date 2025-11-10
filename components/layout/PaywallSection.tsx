@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Card, CardContent } from "./ui/card";
-import { Button } from "./ui/button";
+import { Card, CardContent } from "../ui/card";
+import { Button } from "../ui/button";
 import { Crown } from "lucide-react";
 import FeatureComponent from "@/modules/home/ui/components/featureComponent";
 

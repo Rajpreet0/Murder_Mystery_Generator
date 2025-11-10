@@ -1,5 +1,5 @@
 "use client";
-import DropdownAbstract from "@/components/DropdownAbstract"
+import DropdownAbstract from "@/components/layout/DropdownAbstract"
 import { useWizardStore } from "@/store/useWizardStore"
 
 const StepTwo = () => {
